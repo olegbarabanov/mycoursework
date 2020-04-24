@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Мобильная микроCRM</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Barabanov Oleg, my personal page olegbarabanov.ru" />
+</head>
+
+<body>
+    <template id="main-tpl">
+    <v-ons-splitter v-if="auth">
+      <v-ons-splitter-side swipeable width="250px" collapse="" side="left" :open.sync="openSide">
+        <v-ons-page>
+
+          <v-ons-list>
+            <v-ons-list-item v-for="(value, name, index) in pages" :key="index" tappable modifier="chevron"
+              @click="currentPage = name; openSide = false; typeComponent = value.component">
+              <div class="center">
+                <v-ons-icon size="20px" :icon="value.icon" style="margin-right:10px;"></v-ons-icon>{{ value.name }}
+              </div>
+            </v-ons-list-item>
+          </v-ons-list>
+
+          <v-ons-toolbar>
+            <div class="center">
+              <v-ons-toolbar-button @click="currentPage = 'homePage'; openSide = false; typeComponent = 'homePage';"
+                icon="ion-ios-home"></v-ons-toolbar-button>
+            </div>
+          </v-ons-toolbar>
+
+          <v-ons-bottom-toolbar>
+            <v-ons-row style="height:100%">
+              <v-ons-col vertical-align="center" style="text-align:center;">
+                <v-ons-toolbar-button @click="logout" icon="ion-ios-exit"></v-ons-toolbar-button>
+              </v-ons-col>
+              <v-ons-col vertical-align="center" style="text-align:center;">
+                <v-ons-toolbar-button @click="logout" icon="ion-ios-settings"></v-ons-toolbar-button>
+              </v-ons-col>
+            </v-ons-row>
+          </v-ons-bottom-toolbar>
+        </v-ons-page>
+      </v-ons-splitter-side>
+      <v-ons-splitter-content>
+        <component :is="typeComponent" :entity="currentPage" :key="currentPage"
+          :toggle-menu="() => openSide = !openSide"></component>
+      </v-ons-splitter-content>
+    </v-ons-splitter>
+  </template>
+
+    <template id="home-tpl">
+    <v-ons-page>
+      <custom-toolbar title="Главная страница" :action="toggleMenu"></custom-toolbar>
+      <v-ons-card>
+        <div class="title">
+          Статистика
+        </div>
+        <div class="content">
+          <div>
+            <v-ons-button>
+              <v-ons-icon icon="ion-thumbsup"></v-ons-icon>
+            </v-ons-button>
+            <v-ons-button>
+              <v-ons-icon icon="ion-share"></v-ons-icon>
+            </v-ons-button>
+          </div>
+          <v-ons-list>
+            <v-ons-list-header>Bindings</v-ons-list-header>
+            <v-ons-list-item>Vue</v-ons-list-item>
+            <v-ons-list-item>Angular</v-ons-list-item>
+            <v-ons-list-item>React</v-ons-list-item>
+          </v-ons-list>
+        </div>
+      </v-ons-card>
+    </v-ons-page>
+  </template>
+
+    <template id="toolbar-tpl">
+    <v-ons-toolbar>
+      <div class="left">
+        <v-ons-toolbar-button @click="action">
+          <v-ons-icon icon="ion-navicon, material:md-menu"></v-ons-icon>
+        </v-ons-toolbar-button>
+      </div>
+      <div class="center">{{ title }}</div>
+    </v-ons-toolbar>
+  </template>
+
+    <template id="entity-tpl">
+    <v-ons-page>
+      <v-ons-navigator swipeable :page-stack="pageStack" @page-back="refresh($event)"
+        @push-page="pageStack.push($event)">
+      </v-ons-navigator>
+    </v-ons-page>
+  </template>
+
+    <template id="entity-list-tpl">
+    <v-ons-page>
+      <v-ons-toolbar>
+        <div class="center">Список {{entity}} (Показано: {{list.length}})</div>
+        <div class="center">
+          <v-ons-switch input-id="switch1" v-model="switchMode"></v-ons-switch>
+        </div>
+        <div class="right">
+          <v-ons-toolbar-button>Сформировать отчет</v-ons-toolbar-button>
+        </div>
+      </v-ons-toolbar>
+      <v-ons-pull-hook :action="refresh" @changestate="state = $event.state">
+        <span v-show="state === 'initial'"> Обновить ? </span>
+        <span v-show="state === 'preaction'"> Отпустите </span>
+        <span v-show="state === 'action'"> Обновляем список... </span>
+      </v-ons-pull-hook>
+
+      <v-ons-card v-if="switchMode">
+        <v-ons-row>
+          <v-ons-col>
+          </v-ons-col>
+          <v-ons-col v-for="(field, name) in scheme" :key="name" v-show="!field.hidden">
+            <div align="center">
+              {{field.name}}
+            </div>
+          </v-ons-col>
+        </v-ons-row>
+
+
+        <v-ons-row v-for="(item, index) in list" :key="item.id">
+          <v-ons-col>
+            <v-ons-button icon="md-edit"></v-ons-button>
+          </v-ons-col>
+          <v-ons-col v-for="(itemData, index) in item" :key="index">
+            <div align="center" v-if="scheme[index].type === 'tel'">
+              <p style="text-align: center;">
+                <a @click="showPhonePopup(itemData,$event)" :phone="itemData">
+                  <v-ons-icon icon="md-phone"></v-ons-icon>
+                  {{itemData}}
+                </a>
+              </p>
+            </div>
+            <div align="center" v-else>
+              {{itemData}}
+            </div>
+          </v-ons-col>
+        </v-ons-row>
+      </v-ons-card>
+
+      <v-ons-card v-else>
+        <v-ons-list>
+          <v-ons-list-item modifier="chevron" tappable v-for="(item, index) in list" :key="item.id"
+            @click="edit(item.id)">{{item.name}}</v-ons-list-item>
+        </v-ons-list>
+      </v-ons-card>
+
+      <v-ons-button @click="filter.push({vtype:'group',type:'group',field:null,value:null,name:'Группировать'})">Добавить группировку</v-ons-button>
+      <v-ons-button @click="filter.push({vtype:'asc',type:'asc',field:null,value:null,name:'Сорт. по возр.'})">Добавить сортировку по возрастанию</v-ons-button>
+      <v-ons-button @click="filter.push({vtype:'desc',type:'desc',field:null,value:null,name:'Сорт. по убыв.'})">Добавить сортировку по убыванию</v-ons-button>
+      <v-ons-button @click="filter.push({vtype:'filter',type:'filter',field:null,value:null,name:'Фильтр'})">Добавить фильтр по тексту</v-ons-button>
+      <v-ons-button @click="filter.push({vtype:'mindate',type:'min',field:null,value:null,name:'Мин. дата'})">Добавить мин. дату</v-ons-button>
+      <v-ons-button @click="filter.push({vtype:'maxdate',type:'max',field:null,value:null,name:'Макс. дата'})">Добавить макс. дату</v-ons-button>
+      <v-ons-button @click="filter.push({vtype:'min',type:'min',field:null,value:null,name:'Мин.'})">Добавить минимум</v-ons-button>
+      <v-ons-button @click="filter.push({vtype:'max',type:'max',field:null,value:null,name:'Макс'})">Добавить максимум</v-ons-button>
+      <form>
+        <v-ons-row>
+          <v-ons-col v-for="(item, index) in filter" :key="index">
+            <div>
+                  {{item.name}}
+                  <v-ons-button @click="filter.splice(index,1);" icon="md-minus"></v-ons-button>
+                  <v-ons-select v-model="filter[index].field">
+                   <option v-for="(field, name) in scheme" :value="name" :key="name">{{field.name}}</option>
+                  </v-ons-select>
+                  <input type="text" v-model="filter[index].value" v-if="filter[index].type === 'filter'" />
+                  <input type="text" v-model="filter[index].value" v-else-if="filter[index].vtype === 'mindate'" />
+                  <input type="text" v-model="filter[index].value" v-else-if="filter[index].vtype === 'maxdate'" />
+              </div>
+          </v-ons-col>
+          <v-ons-row>
+      </form>
+        <v-ons-fab position="bottom right" @click="edit(0)">
+          <v-ons-icon icon="md-plus"></v-ons-icon>
+        </v-ons-fab>
+
+        <v-ons-popover cancelable :visible.sync="popoverPhoneVisible" :target="popoverPhoneTarget"
+          :cover-target="coverPhoneTarget" :direction="popoverPhoneDirection">
+          <a :href="'tel:' + callPhone">
+            <v-ons-button icon="md-phone">Позвонить ?</v-ons-button>
+          </a>
+        </v-ons-popover>
+        <v-ons-popover cancelable :visible.sync="popoverPhoneVisible" :target="popoverPhoneTarget"
+          :cover-target="coverPhoneTarget" :direction="popoverPhoneDirection">
+          <a :href="'tel:' + callPhone">
+            <v-ons-button icon="md-phone">Позвонить ?</v-ons-button>
+          </a>
+        </v-ons-popover>
+    </v-ons-page>
+  </template>
+
+    <template id="entity-edit-tpl">
+    <v-ons-page>
+      <v-ons-toolbar>
+        <v-ons-back-button>Вернуться</v-ons-back-button>
+        <div class="center" v-if="dataId === null">Создать новый</div>
+        <div class="center" v-else>Редактировать {{dataId}}</div>
+      </v-ons-toolbar>
+
+      <v-ons-card>
+        <form @submit="save" class="content">
+          <v-ons-list>
+            <v-ons-list-item v-for="(field, name) in scheme" :key="name" v-show="!field.hidden">
+              <div style="text-align: center">
+                {{field.name}}
+              </div>
+              <div v-if="field.type === 'numeric'">
+                <v-ons-input modifier="material underbar" v-model="data[name]" type="number" :placeholder="field.name"
+                  float></v-ons-input>
+              </div>
+              <div class="center" v-else-if="field.type === 'text'">
+                <v-ons-input modifier="material underbar" v-model="data[name]" type="text" :placeholder="field.name"
+                  float></v-ons-input>
+              </div>
+              <div class="center" v-else-if="field.type === 'date'">
+                <v-ons-input modifier="material underbar" v-model="data[name]" type="date" :placeholder="field.name"
+                  float></v-ons-input>
+              </div>
+              <div class="center" v-else-if="field.type === 'email'">
+                <v-ons-input modifier="material underbar" v-model="data[name]" type="email" :placeholder="field.name"
+                  float></v-ons-input>
+              </div>
+              <div class="center" v-else-if="field.type === 'password'">
+                <v-ons-input autocomplete="new-password" modifier="material underbar" v-model="data[name]"
+                  type="password" :placeholder="field.name" float></v-ons-input>
+              </div>
+              <div class="center" v-else-if="field.type === 'select'">
+                <v-ons-input modifier="material underbar" v-model="data[name]" type="hidden" style="width:100%;"
+                  :placeholder="field.name" float></v-ons-input>
+                <v-ons-select modifier="material underbar" style="width: 40%" v-model="data[name]"
+                  :placeholder="field.name">
+                  <option v-for="value in field.values" :value="value.id">
+                    {{ value.name }}
+                  </option>
+                </v-ons-select>
+              </div>
+              <div class="center" v-else>
+                <v-ons-input modifier="material underbar" v-model="data[name]" type="text" :placeholder="field.name"
+                  float></v-ons-input>
+              </div>
+            </v-ons-list-item>
+          </v-ons-list>
+        </form>
+      </v-ons-card>
+      <v-ons-fab position="bottom left" @click="del" v-show="dataId">
+        <v-ons-icon icon="md-delete"></v-ons-icon>
+      </v-ons-fab>
+      <v-ons-fab position="bottom right" @click="save">
+        <v-ons-icon icon="md-check"></v-ons-icon>
+      </v-ons-fab>
+      <v-ons-modal :visible="modalVisible" @click="modalVisible = false">
+        <p style="text-align: center">
+          Выполняем <v-ons-icon icon="fa-spinner" spin></v-ons-icon>
+        </p>
+      </v-ons-modal>
+    </v-ons-page>
+  </template>
+
+    <template id="make-contract-report-tpl">
+    <v-ons-page>
+      <v-ons-toolbar>
+      </v-ons-toolbar>
+      <v-ons-card>
+
+        <v-ons-row>
+          <v-ons-col v-for="(field, name) in scheme" :key="name" v-show="!field.hidden">
+            {{name}}
+            <span>+</span><span>-</span><span>Group</span>
+          </v-ons-col>
+        </v-ons-row>
+
+        <v-ons-row v-for="(dataRow, index) in dataTable" :key="index">
+          <v-ons-col v-for="(dataCol, index) in dataRow" :key="dataCol.id">
+            {{dataCol}}
+          </v-ons-col>
+        </v-ons-row>
+      </v-ons-card>
+    </v-ons-page>
+  </template>
+
+
+    <div id="app"></div>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.2"></script> -->
+    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css">
+    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
+    <script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-onsenui/dist/vue-onsenui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+
+    <script src="/class/EntityRepository.js"></script>
+    <script src="/class/ClientRepository.js"></script>
+    <script src="/class/ContractRepository.js"></script>
+    <script src="/class/ContractStageRepository.js"></script>
+    <script src="/class/ContractTypeRepository.js"></script>
+    <script src="/class/ActRepository.js"></script>
+    <script src="/class/InvoiceRepository.js"></script>
+    <script src="/class/UserRepository.js"></script>
+    <script src="/class/RoleRepository.js"></script>
+    <script src="/class/MainFacade.js"></script>
+
+    <script>
+        Vue.use(VueOnsen);
+    </script>
+    <script src="/component/customToolbar.js"></script>
+    <script src="/component/entity.js"></script>
+    <script src="/component/entityEdit.js"></script>
+    <script src="/component/entityList.js"></script>
+    <script src="/component/homePage.js"></script>
+    <script src="/component/makeContractReport.js"></script>
+
+    <script src="/init.js"></script>
+    <style>
+        input[type="date"]::before {
+            color: transparent;
+            content: attr(placeholder) ": ";
+        }
+    </style>
+</body>
+
+</html>
