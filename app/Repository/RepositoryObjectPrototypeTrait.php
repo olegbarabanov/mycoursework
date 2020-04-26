@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-trait RepositoryObjectTrait {
+trait RepositoryObjectPrototypeTrait {
 
     public function getRawData(): array {
         return get_object_vars($this); 

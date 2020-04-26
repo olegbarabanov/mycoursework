@@ -5,7 +5,7 @@ class EntityRepository {
 
     async getList(filter) {
         let formData = new FormData();
-        filter.forEach((f, i) => {
+        if (filter) filter.forEach((f, i) => {
             formData.append(`${f.type}[${i}][value]`, f.value);
             formData.append(`${f.type}[${i}][field]`, f.field);
         });
@@ -23,7 +23,9 @@ class EntityRepository {
 
     async save(data) {
         var formData = new FormData();
-        for (var key in data) formData.append(key, data[key]);
+        for (var key in data) {
+            formData.append(key, (data[key] === null) ? "" : data[key]);
+        };
 
         if (data.id) {
             var response = await fetch(`/api/v1/${this.controller}/${data.id}/update`, {

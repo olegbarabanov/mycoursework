@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-interface RepositoryObjectInterface {
+interface RepositoryObjectPrototypeInterface {
 
     public function getRawData(): array;
 

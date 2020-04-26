@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-class Role implements RepositoryObjectInterface
+class Role implements RepositoryObjectPrototypeInterface
 {
-    use RepositoryObjectTrait;
+    use RepositoryObjectPrototypeTrait;
 }

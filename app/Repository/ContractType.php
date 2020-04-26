@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-class ContractType implements RepositoryObjectInterface
+class ContractType implements RepositoryObjectPrototypeInterface
 {
-    use RepositoryObjectTrait;
+    use RepositoryObjectPrototypeTrait;
 }

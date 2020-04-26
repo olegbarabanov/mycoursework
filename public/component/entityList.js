@@ -21,6 +21,7 @@ const entityList = {
             popoverPhoneTarget: null,
             popoverPhoneDirection: 'left',
             coverPhoneTarget: false,
+            filterVisible: false,
             filter: []
         }
     },

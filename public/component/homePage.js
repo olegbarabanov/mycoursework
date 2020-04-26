@@ -3,5 +3,8 @@ const homePage = {
     props: ['toggleMenu'],
     components: {
         customToolbar
+    },
+    data() {
+        return {}
     }
 };

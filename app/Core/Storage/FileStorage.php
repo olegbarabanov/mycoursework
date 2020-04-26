@@ -2,23 +2,23 @@
 
 namespace App\Core\Storage;
 
-use SplFileInfo;
-
 class FileStorage implements FileStorageInterface {
 
-    protected SplFileInfo $path;
-    protected string $salt; //Соль
+    protected \SplFileInfo $path;
+    protected string $salt; // Hash salt
     
-    public function __construct(SplFileInfo $path, string $salt = "") {
+    public function __construct(\SplFileInfo $path, string $salt = "") {
         $this->path = $path;
         $this->salt = $salt;
     }
     
-    public function setFile(SplFileInfo $file): string {
-        $path = $file->getRealPath();
-        $newName = crypt($path.time(), $this->salt);
-        $newFullPath = $this->path . DIRECTORY_SEPARATOR . $newPath;
-        rename($path, $newFullPath);
+    public function setFile(\SplFileObject $file): string {
+        $newName = crypt($this->path.time(), $this->salt);
+        $newFile = new \SplFileObject($this->path
+                                      .DIRECTORY_SEPARATOR
+                                      .$newName
+                                      .'.pdf', "w+");
+        $newFile->fwrite($file->fread(0)); //FIXME 0 to length. It's safety my server @ Oleg Barabanov
         return $newName;
     }
     
@@ -27,7 +27,7 @@ class FileStorage implements FileStorageInterface {
     }
     
     public function getFile(string $id): SplFileObject {
-        return new SplFileObject($this->path . DIRECTORY_SEPARATOR . $id, "r");
+        return new \SplFileObject($this->path . DIRECTORY_SEPARATOR . $id, "r");
     }
 
     public function isAccess(): bool {

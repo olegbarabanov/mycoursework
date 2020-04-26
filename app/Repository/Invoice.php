@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-class Invoice implements RepositoryObjectInterface
+class Invoice implements RepositoryObjectPrototypeInterface
 {
-    use RepositoryObjectTrait;
+    use RepositoryObjectPrototypeTrait;
 }

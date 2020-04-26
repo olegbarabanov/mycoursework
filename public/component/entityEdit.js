@@ -61,6 +61,9 @@
                     ons.notification.toast("Сохранено", { timeout: 2500 })
                 });
             },
+            upload(field, event) {
+                this.data[field] = event.target.files[0];
+            },
             loadAllSelectFields() {
                 var call = async() => {
                     var scheme = this.scheme;

@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-class Contract implements RepositoryObjectPrototypeInterface
+class HistoryItem implements RepositoryObjectPrototypeInterface
 {
     use RepositoryObjectPrototypeTrait;
 }

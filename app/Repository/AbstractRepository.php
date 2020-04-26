@@ -22,6 +22,13 @@ abstract class AbstractRepository implements \SplSubject
 
     abstract protected function getDatabaseTable(): string;
     abstract protected function getDataClass(): string;
+    
+    /**
+     * Return custom map field in the used table;
+     * 
+     * @return array //Scheme
+     */
+    abstract public function getScheme(): array;
 
     public function attach(\SplObserver $observer): void
     {
@@ -36,13 +43,12 @@ abstract class AbstractRepository implements \SplSubject
         }
     }
 
-    public function notify(?string $event = null, ?RepositoryObjectInterface $data = null)
+    public function notify(?string $event = null, ?RepositoryObjectPrototypeInterface $data = null)
     {
         foreach ($this->observers as $observer) {
             $observer->update($this, $event, $data);
         }
     }
-
 
     /**
      * Return filled array from the used table. 
@@ -86,14 +92,7 @@ abstract class AbstractRepository implements \SplSubject
         //filled data for SQL %LIKE%
         if (isset($params["filter"]) && is_array($params["filter"])) {
             foreach ($params["filter"] as $filter) {
-                $queryBuilder->like($filter["field"], $filter["value"]);
-            };
-        };
-
-        //filled
-        if (isset($params["filter"]) && is_array($params["filter"])) {
-            foreach ($params["filter"] as $filter) {
-                $queryBuilder->lte($filter["field"], $filter["value"]);
+                $queryBuilder->like($filter["field"], "%".$filter["value"]."%");
             };
         };
 
@@ -118,35 +117,41 @@ abstract class AbstractRepository implements \SplSubject
         return $dataList;
     }
 
-    public function insert(RepositoryObjectInterface $obj): array
+    public function insert(RepositoryObjectPrototypeInterface $obj): array
     {
         $rawData = $obj->getRawData();
         $table = $this->getDatabaseTable();
+        foreach ($rawData as $key => $value) {
+            if ($value instanceof \SplFileObject) {
+                $rawData[$key] = $this->fs->setFile($value);
+            };
+        };
         $success = $this->db->table($table)->insert($rawData);
-        $lastId = $success ? $this->db->getLastId() : null;
-        return ["save" => $success, "id" => $lastId];
+        $obj->id = $success ? $this->db->getLastId() : null;
+        if ($success) $this->notify("insert", $obj);
+        return ["save" => $success, "id" => $obj->id];
     }
 
-    public function update(RepositoryObjectInterface $obj): array
+    public function update(RepositoryObjectPrototypeInterface $obj): array
     {
         $rawData = $obj->getRawData();
         $table = $this->getDatabaseTable();
-        $success = $this->db($table)->eq("id", $obj->id)->update($rawData);
+        foreach ($rawData as $key => $value) {
+            if ($value instanceof \SplFileObject) {
+                $rawData[$key] = $this->fs->setFile($value);
+            };
+        };
+        $success = $this->db->table($table)->eq("id", $obj->id)->update($rawData);
+        if ($success) $this->notify("update", $obj);
         return ["save" => $success, "id" => $obj->id];
     }
 
-    public function delete(RepositoryObjectInterface $obj): array
+    public function delete(RepositoryObjectPrototypeInterface $obj): array
     {
         $table = $this->getDatabaseTable();
-        $success = $table->eq("id", $obj->id)->remove();
+        $success = $this->db->table($table)->eq("id", $obj->id)->remove();
+        if ($success) $this->notify("delete", $obj);
         return ["save" => $success, "id" => $obj->id];
     }
-
-    /**
-     * Return custom map field in the used table;
-     * 
-     * @return array
-     */
-    abstract public function getScheme(): array;
 
 }

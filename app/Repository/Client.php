@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-class Client implements RepositoryObjectInterface
+class Client implements RepositoryObjectPrototypeInterface
 {
-    use RepositoryObjectTrait;
+    use RepositoryObjectPrototypeTrait;
 }

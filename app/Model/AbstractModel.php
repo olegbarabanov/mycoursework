@@ -22,7 +22,9 @@ abstract class AbstractModel {
     {
         $dataClass = $this->repository->getDataClass();
         $item = new $dataClass;
-        foreach ($data as $key => $value) $item->$key = $value;
+        foreach ($data as $key => $value){
+            $item->$key = $value;
+        };
         $item->id = null;
         return $this->repository->insert($item);
     }

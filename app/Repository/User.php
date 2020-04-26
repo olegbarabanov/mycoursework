@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-class User implements RepositoryObjectInterface
+class User implements RepositoryObjectPrototypeInterface
 {
-    use RepositoryObjectTrait;
+    use RepositoryObjectPrototypeTrait;
 }

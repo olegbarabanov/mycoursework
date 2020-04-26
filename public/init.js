@@ -48,18 +48,21 @@ async function init() {
                         name: "Роли сотрудников",
                         component: "entity",
                         icon: "md-present-to-all"
-                    },
-                    makeContractReport: {
-                        name: "Отчеты по контрактам",
-                        component: "makeContractReport",
-                        icon: "md-folder"
                     }
                 },
                 auth: false,
                 openSide: false,
                 typeComponent: 'homePage',
+                modalVisible: false,
+                supportPlatforms: ["opera", "firefox", "safari", "chrome", "ie", "android", "blackberry", "ios", "wp"],
+                usePlatform: '',
                 acts: [{}],
             };
+        },
+        watch: {
+            usePlatform(val) {
+                ons.forcePlatformStyling(val);
+            }
         },
         mounted() {
             this.login();
@@ -76,7 +79,7 @@ async function init() {
                 ons.notification.toast('Ваш сеанс завершен.', { timeout: 2000 });
                 this.login();
             },
-            async login() {
+            async login() { // Async function authorization in server
                 let authData = false;
                 let response = await fetch("/api/v1/user/is_auth");
                 if (response.ok) {

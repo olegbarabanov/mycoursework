@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-class Act implements RepositoryObjectInterface
+class Act implements RepositoryObjectPrototypeInterface
 {
-    use RepositoryObjectTrait;
+    use RepositoryObjectPrototypeTrait;
 }
