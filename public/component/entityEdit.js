@@ -74,6 +74,7 @@
                         }
                     };
                     this.scheme = scheme;
+                    this.$forceUpdate(); //bug
                 }
                 call();
             }

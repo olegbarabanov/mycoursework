@@ -11,6 +11,7 @@ const entityList = {
         }
     },
     data() {
+        console.log(this);
         return {
             list: [],
             state: 'initial',

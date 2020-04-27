@@ -18,6 +18,7 @@ class ContractRepository extends AbstractRepository
             "name" => ["name" => "Наименование договора", "type" => "text"],
             "reg_date" => ["name" => "Дата регистрации", "type" => "date"],
             "end_date" => ["name" => "Дата планируемого завершения", "type" => "date"],
+            "custom_info" => ["name" => "Прочая информация", "type" => "text", "multiple" => true],
             "contract_type_id" => ["name" => "Тип договора", "type" => "select", "entity" => "contract_type"],
             "tech_spec" => ["name" => "Тех. задание", "type" => "file"],
             "client" => ["name" => "Клиент", "type" => "select", "entity" => "client"],
@@ -25,7 +26,6 @@ class ContractRepository extends AbstractRepository
             "act" => ["name" => "Закрывающий акт выполненных работ", "type" => "select", "entity" => "act"],
             "stage" => ["name" => "Стадия", "type" => "select", "entity" => "contract_stage"],
             "invoice" => ["name" => "Итоговый счет", "type" => "select", "entity" => "invoice"],
-            "custom_info" => ["name" => "Прочая информация", "type" => "text", "multiple" => true]
         ];
     }
 }

@@ -110,7 +110,7 @@
           <v-ons-switch input-id="switch1" v-model="switchMode"></v-ons-switch>
         </div>
         <div class="right">
-          <v-ons-toolbar-button @click="filterVisible = true">Фильтр</v-ons-toolbar-button>
+          <v-ons-toolbar-button @click="filterVisible = true"> <span v-show="filter.length">! </span>Фильтр</v-ons-toolbar-button>
           <v-ons-toolbar-button>Отчет</v-ons-toolbar-button>
         </div>
       </v-ons-toolbar>
@@ -124,7 +124,7 @@
         <v-ons-row style="flex-wrap: nowrap">
           <v-ons-col width="50px">
           </v-ons-col>
-          <v-ons-col width="150px" v-for="(field, name) in scheme" :key="name" v-show="!field.hidden">
+          <v-ons-col width="150px" v-for="(field, name) in scheme" :ggg="field.hidden" :key="name" v-show="!field.hidden">
             <div align="center">
               {{field.name}}
             </div>
@@ -291,7 +291,7 @@
                 <v-ons-select style="width:100%;" modifier="material underbar" style="width: 40%" v-model="data[name]"
                   :placeholder="field.name">
                   <option v-for="value in field.values" :value="value.id">
-                    {{ value.name }}
+                    #{{value.id}} - {{ value.name }}
                   </option>
                 </v-ons-select>
               </div>
