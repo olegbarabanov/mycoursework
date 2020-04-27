@@ -1,0 +1,99 @@
+@startuml
+
+
+namespace App.Core.Storage  {
+	interface FileStorageInterface << interface >> {
+	}
+	interface StorageInterface << interface >> {
+		+isAccess()
+	}
+	class DatabaseStorage << class >> {
+		+isAccess()
+		+mapArrayToObject()
+	}
+	interface DatabaseStorageInterface << interface >> {
+	}
+}
+namespace PicoDb {
+	class Database << class >> {
+	}
+}
+namespace App.Repository  {
+	class Contract << class >> {
+	}
+	interface RepositoryObjectPrototypeInterface << interface >> {
+		+getRawData()
+		+__set()
+		+__get()
+	}
+
+	class ContractRepository << class >> {
+		+getDatabaseTable()
+		+getDataClass()
+		+getScheme()
+	}
+
+	class RepositoryObjectPrototypeTrait << (T,#FF7700) trait >> {
+		+getRawData()
+		+__set()
+		+__get()
+	}
+
+}
+namespace App.Repository {
+	class AbstractRepository << class >> {
+	}
+}
+namespace App.View.Rest  {
+
+	abstract AbstractRestView << abstract >> {
+	}
+	class ContractView << class >> {
+	}
+}
+namespace App.View  {
+	abstract AbstractView << abstract >> {
+		+__construct()
+		+output()
+	}
+}
+namespace App.Model  {
+	class ContractModel << class >> {
+	}
+}
+namespace App.Model #EB937F {
+	class AbstractModel << class >> {
+	}
+}
+namespace App.Controller  {
+	class ContractController << class >> {
+		#getDefaultModel()
+		#getDefaultView()
+	}
+}
+namespace App.Controller #EB937F {
+	class AbstractController << class >> {
+	}
+}
+
+App.Core.Storage.FileStorageInterface --|> App.Core.Storage.StorageInterface
+App.Core.Storage.DatabaseStorage --|> PicoDb.Database
+App.Core.Storage.DatabaseStorageInterface --|> App.Core.Storage.StorageInterface
+App.Core.Storage.DatabaseStorage ..|> App.Core.Storage.DatabaseStorageInterface
+
+App.Repository.Contract ..|> App.Repository.RepositoryObjectPrototypeInterface
+App.Repository.Contract --* App.Repository.ContractRepository
+App.Repository.ContractRepository --|> App.Repository.AbstractRepository
+App.Repository.AbstractRepository --* App.Model.AbstractModel
+
+App.View.Rest.AbstractRestView --|> App.View.AbstractView
+
+App.View.Rest.ContractView --|> App.View.Rest.AbstractRestView
+
+App.Model.AbstractModel --o App.Controller.AbstractController
+App.View.Rest.AbstractRestView --o App.Controller.AbstractController
+App.Model.ContractModel --|> App.Model.AbstractModel
+
+App.Controller.ContractController --|> App.Controller.AbstractController
+@enduml
+
